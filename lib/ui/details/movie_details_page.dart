@@ -78,16 +78,16 @@ class MovieDetailsPage extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 // Movie poster with hero animation for smooth transitions
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: HeroListUtils.createMoviePosterHero(
-                      movieId: m.id.toString(),
-                      index: 2, // Fixed index for MovieDetailsPage to ensure unique hero tags
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: HeroListUtils.createMoviePosterHero(
+                    movieId: m.id.toString(),
+                    index: 2, // Fixed index for MovieDetailsPage to ensure unique hero tags
+                    child: SizedBox(
+                      width: double.infinity,
                       child: CachedNetworkImage(
-                        imageUrl: posterUrl(m.posterPath, size: 'w780'),
-                        fit: BoxFit.cover,
+                        imageUrl: posterUrl(m.posterPath, size: 'w1280'),
+                        fit: BoxFit.contain,
                         placeholder: (context, _) => Shimmer.fromColors(
                           baseColor: Colors.black12,
                           highlightColor: Colors.white,
