@@ -19,32 +19,45 @@ class NowPlayingCubit extends Cubit<NowPlayingState> {
   StreamSubscription? _sub;
   NowPlayingCubit(this.repo) : super(const NowPlayingState()) {
     _sub = repo.watchNowPlayingUpTo(upToPage: 1).listen(
-          (data) => emit(state.copyWith(movies: data, loading: false)),
-      onError: (e) => emit(state.copyWith(loading: false, error: e)),
+          (data) {
+            if (!isClosed) emit(state.copyWith(movies: data, loading: false));
+          },
+      onError: (e) {
+        if (!isClosed) emit(state.copyWith(loading: false, error: e));
+      },
     );
     refresh();
   }
 
   Future<void> refresh() async {
+    if (isClosed) return;
     try {
       final end = await repo.refreshNowPlaying();
-      emit(state.copyWith(endReached: end));
-    } catch (e) { emit(state.copyWith(loading: false, error: e)); }
+      if (!isClosed) emit(state.copyWith(endReached: end));
+    } catch (e) { 
+      if (!isClosed) emit(state.copyWith(loading: false, error: e)); 
+    }
   }
 
   Future<void> loadMore() async {
-    if (state.loading || state.endReached) return;
-    emit(state.copyWith(loading: true));
+    if (state.loading || state.endReached || isClosed) return;
+    if (!isClosed) emit(state.copyWith(loading: true));
     final next = state.page + 1;
     try {
       final end = await repo.refreshNowPlaying(page: next);
-      _sub?.cancel();
-      _sub = repo.watchNowPlayingUpTo(upToPage: next).listen(
-            (data) => emit(state.copyWith(movies: data, loading: false, page: next, endReached: end)),
-        onError: (e) => emit(state.copyWith(loading: false, error: e)),
-      );
+      if (!isClosed) {
+        _sub?.cancel();
+        _sub = repo.watchNowPlayingUpTo(upToPage: next).listen(
+              (data) {
+                if (!isClosed) emit(state.copyWith(movies: data, loading: false, page: next, endReached: end));
+              },
+          onError: (e) {
+            if (!isClosed) emit(state.copyWith(loading: false, error: e));
+          },
+        );
+      }
     } catch (e) {
-      emit(state.copyWith(loading: false));
+      if (!isClosed) emit(state.copyWith(loading: false));
     }
   }
 

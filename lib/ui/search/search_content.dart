@@ -30,12 +30,12 @@ class _SearchContentState extends State<SearchContent> {
                   onChanged: (q) => context.read<SearchBloc>().add(SearchQueryChanged(q)),
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'Toggle layout',
-                onPressed: () => setState(() => grid = !grid),
-                icon: Icon(grid ? Icons.view_list_outlined : Icons.grid_view),
-              ),
+              // const SizedBox(width: 8),
+              // IconButton(
+              //   tooltip: 'Toggle layout',
+              //   onPressed: () => setState(() => grid = !grid),
+              //   icon: Icon(grid ? Icons.view_list_outlined : Icons.grid_view),
+              // ),
             ],
           ),
           const SizedBox(height: 16),

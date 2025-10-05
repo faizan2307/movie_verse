@@ -105,9 +105,12 @@ class _MainTabPageState extends State<MainTabPage> with TickerProviderStateMixin
             end: Alignment.bottomCenter,
           ),
         ),
-        child: TabBarView(
-          controller: _tabController,
-          children: [
+        child: SafeArea(
+          top: false,
+          bottom: true,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -144,7 +147,8 @@ class _MainTabPageState extends State<MainTabPage> with TickerProviderStateMixin
               ),
               child: const SavedTabContent(),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

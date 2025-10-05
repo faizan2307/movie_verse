@@ -41,164 +41,170 @@ class MovieDetailsPage extends StatelessWidget {
           context.go('/');
           return false;
         },
-        child: Scaffold(
-        appBar: AppBar(
-          title: Text(AppStrings.details),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
+        child: SafeArea(
+          top: false,
+          bottom: true,
+          child: Scaffold(
+          appBar: AppBar(
+            title: Text(AppStrings.details),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/');
+                }
+              },
+            ),
           ),
-        ),
-        body: BlocBuilder<DetailsCubit, DetailsState>(
-          builder: (context, state) {
-            final m = state.movie;
+          body: BlocBuilder<DetailsCubit, DetailsState>(
+            builder: (context, state) {
+              final m = state.movie;
 
-            print(m?.id.toString());
-            
-            // Show loading indicator while fetching movie data
-            if (state.loading && m == null) return const Center(child: CircularProgressIndicator());
-            
-            // Show error state if movie data couldn't be loaded
-            if (m == null) {
-              return const Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(AppStrings.notFound),
-                ),
-              );
-            }
+              print(m?.id.toString());
 
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                // Movie poster with hero animation for smooth transitions
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: HeroListUtils.createMoviePosterHero(
-                    movieId: m.id.toString(),
-                    index: 2, // Fixed index for MovieDetailsPage to ensure unique hero tags
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: CachedNetworkImage(
-                        imageUrl: posterUrl(m.posterPath, size: 'w1280'),
-                        fit: BoxFit.contain,
-                        placeholder: (context, _) => Shimmer.fromColors(
-                          baseColor: Colors.black12,
-                          highlightColor: Colors.white,
-                          child: const ColoredBox(color: Colors.black12),
+              // Show loading indicator while fetching movie data
+              if (state.loading && m == null) return const Center(child: CircularProgressIndicator());
+
+              // Show error state if movie data couldn't be loaded
+              if (m == null) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(AppStrings.notFound),
+                  ),
+                );
+              }
+
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // Movie poster with hero animation for smooth transitions
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: HeroListUtils.createMoviePosterHero(
+                      movieId: m.id.toString(),
+                      index: 2, // Fixed index for MovieDetailsPage to ensure unique hero tags
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: CachedNetworkImage(
+                          imageUrl: posterUrl(m.posterPath, size: 'w1280'),
+                          fit: BoxFit.contain,
+                          placeholder: (context, _) => Shimmer.fromColors(
+                            baseColor: Colors.black12,
+                            highlightColor: Colors.white,
+                            child: const ColoredBox(color: Colors.black12),
+                          ),
+                          errorWidget: (context, _, __) => const ColoredBox(color: Colors.black12),
                         ),
-                        errorWidget: (context, _, __) => const ColoredBox(color: Colors.black12),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Movie title with bold styling
-                Text(
-                  m.title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                
-                // Visual rating bar (only shown if rating exists)
-                if (m.voteAverage != null) _RatingBar(rating10: m.voteAverage!),
-                const SizedBox(height: 8),
-                
-                // Information chips showing rating, runtime, and release date
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if (m.voteAverage != null)
-                      Chip(
-                        avatar: const Icon(Icons.star, size: 18, color: Colors.amber),
-                        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                        label: Text('${m.voteAverage!.toStringAsFixed(1)}/10'),
-                      ),
-                    if (m.runtime != null)
-                      Chip(
-                        avatar: const Icon(Icons.timer_outlined, size: 18),
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                        label: Text('${m.runtime} ${AppStrings.minutes}'),
-                      ),
-                    if (m.releaseDate != null)
-                      Chip(
-                        avatar: const Icon(Icons.event, size: 18),
-                        backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
-                        label: Text(m.releaseDate!),
-                      ),
-                  ],
-                ),
-                // Movie overview/synopsis (only shown if available)
-                if (m.overview?.isNotEmpty == true) Text(m.overview!),
-                const SizedBox(height: 12),
-                
-                // Genre chips (only shown if genres exist)
-                if (m.genres.isNotEmpty)
+                  const SizedBox(height: 16),
+
+                  // Movie title with bold styling
+                  Text(
+                    m.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Visual rating bar (only shown if rating exists)
+                  if (m.voteAverage != null) _RatingBar(rating10: m.voteAverage!),
+                  const SizedBox(height: 8),
+
+                  // Information chips showing rating, runtime, and release date
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: m.genres
-                        .map((g) => Chip(
-                              label: Text(g),
-                              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
-                            ))
-                        .toList(),
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (m.voteAverage != null)
+                        Chip(
+                          avatar: const Icon(Icons.star, size: 18, color: Colors.amber),
+                          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                          label: Text('${m.voteAverage!.toStringAsFixed(1)}/10'),
+                        ),
+                      if (m.runtime != null)
+                        Chip(
+                          avatar: const Icon(Icons.timer_outlined, size: 18),
+                          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                          label: Text('${m.runtime} ${AppStrings.minutes}'),
+                        ),
+                      if (m.releaseDate != null)
+                        Chip(
+                          avatar: const Icon(Icons.event, size: 18),
+                          backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+                          label: Text(m.releaseDate!),
+                        ),
+                    ],
                   ),
-                const SizedBox(height: 24),
-                
-                // Action buttons row
-                Row(
-                  children: [
-                    // Save/Unsave button with dynamic icon and text
-                    FilledButton.icon(
-                      onPressed: () => context.read<DetailsCubit>().toggle(),
-                      icon: Icon(state.isSaved ? Icons.bookmark : Icons.bookmark_border),
-                      label: Text(state.isSaved ? AppStrings.saved : AppStrings.save),
+                  // Movie overview/synopsis (only shown if available)
+                  if (m.overview?.isNotEmpty == true) Text(m.overview!),
+                  const SizedBox(height: 12),
+
+                  // Genre chips (only shown if genres exist)
+                  if (m.genres.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: m.genres
+                          .map((g) => Chip(
+                                label: Text(g),
+                                backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                              ))
+                          .toList(),
                     ),
-                    const SizedBox(width: 12),
-                    
-                    // Share button that creates deep links for sharing
-                    OutlinedButton.icon(
-                      onPressed: () => Share.share(
-                        DeepLinkUtils.createShareMessage(m.id),
-                        subject: AppStrings.shareMovieSubject,
+                  const SizedBox(height: 24),
+
+                  // Action buttons (wrap to avoid overflow on small screens)
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      // Save/Unsave button with dynamic icon and text
+                      FilledButton.icon(
+                        onPressed: () => context.read<DetailsCubit>().toggle(),
+                        icon: Icon(state.isSaved ? Icons.bookmark : Icons.bookmark_border),
+                        label: Text(state.isSaved ? AppStrings.saved : AppStrings.save),
                       ),
-                      icon: const Icon(Icons.share),
-                      label: Text(AppStrings.share),
-                    ),
-                    const SizedBox(width: 12),
-                    
-                    // Trailer button that searches YouTube for movie trailers
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        // Create search query with movie title and "trailer" keyword
-                        final q = Uri.encodeComponent('${m.title} ${AppStrings.trailer.toLowerCase()}');
-                        final url = Uri.parse('https://www.youtube.com/results?search_query=$q');
-                        
-                        // Launch YouTube search in external browser
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(url, mode: LaunchMode.externalApplication);
-                        }
-                      },
-                      icon: const Icon(Icons.ondemand_video),
-                      label: Text(AppStrings.trailer),
-                    ),
-                  ],
+
+                      // Share button that creates deep links for sharing
+                      OutlinedButton.icon(
+                        onPressed: () => Share.share(
+                          DeepLinkUtils.createShareMessage(m.id),
+                          subject: AppStrings.shareMovieSubject,
+                        ),
+                        icon: const Icon(Icons.share),
+                        label: Text(AppStrings.share),
+                      ),
+
+                      // Trailer button that searches YouTube for movie trailers
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          // Create search query with movie title and "trailer" keyword
+                          final q = Uri.encodeComponent('${m.title} ${AppStrings.trailer.toLowerCase()}');
+                          final url = Uri.parse('https://www.youtube.com/results?search_query=$q');
+
+                          // Launch YouTube search in external browser
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        icon: const Icon(Icons.ondemand_video),
+                        label: Text(AppStrings.trailer),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
                 ),
-              ],
-            );
-          },
         ),
-      ),
       ),
     );
   }

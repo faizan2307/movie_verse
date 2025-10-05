@@ -26,13 +26,13 @@ class SavedContent extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    BlocBuilder<SavedCubit, SavedState>(
-                      builder: (context, state) => IconButton(
-                        tooltip: 'Toggle layout',
-                        onPressed: () => context.read<SavedCubit>().toggleLayout(),
-                        icon: Icon(state.grid ? Icons.view_list_outlined : Icons.grid_view),
-                      ),
-                    ),
+                    // BlocBuilder<SavedCubit, SavedState>(
+                    //   builder: (context, state) => IconButton(
+                    //     tooltip: 'Toggle layout',
+                    //     onPressed: () => context.read<SavedCubit>().toggleLayout(),
+                    //     icon: Icon(state.grid ? Icons.view_list_outlined : Icons.grid_view),
+                    //   ),
+                    // ),
                     PopupMenuButton<String>(
                       onSelected: (v) async {
                         final cubit = context.read<SavedCubit>();

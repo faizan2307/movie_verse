@@ -34,10 +34,24 @@ class _SectionListPageState extends State<SectionListPage> {
     if (!_scrollController.hasClients) return;
     final pos = _scrollController.position;
     if (pos.pixels >= pos.maxScrollExtent - 300) {
-      if (widget.type == SectionType.trending) {
-        if (mounted) context.read<TrendingCubit>().loadMore();
-      } else {
-        if (mounted) context.read<NowPlayingCubit>().loadMore();
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    if (!mounted) return;
+    
+    if (widget.type == SectionType.trending) {
+      try {
+        context.read<TrendingCubit>().loadMore();
+      } catch (e) {
+        // Provider not found, ignore
+      }
+    } else {
+      try {
+        context.read<NowPlayingCubit>().loadMore();
+      } catch (e) {
+        // Provider not found, ignore
       }
     }
   }
@@ -61,10 +75,20 @@ class _SectionListPageState extends State<SectionListPage> {
         appBar: AppBar(title: Text(title)),
         body: RefreshIndicator(
           onRefresh: () async {
+            if (!mounted) return;
+            
             if (widget.type == SectionType.trending) {
-              await context.read<TrendingCubit>().refresh();
+              try {
+                await context.read<TrendingCubit>().refresh();
+              } catch (e) {
+                // Provider not found, ignore
+              }
             } else {
-              await context.read<NowPlayingCubit>().refresh();
+              try {
+                await context.read<NowPlayingCubit>().refresh();
+              } catch (e) {
+                // Provider not found, ignore
+              }
             }
           },
           child: CustomScrollView(
@@ -196,8 +220,10 @@ class _FilterBar extends StatelessWidget {
       height: 48,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
             PopupMenuButton<String>(
               tooltip: 'Sort',
               onSelected: onSortChanged,
@@ -222,7 +248,8 @@ class _FilterBar extends StatelessWidget {
               IconButton(tooltip: 'Clear year', icon: const Icon(Icons.clear), onPressed: onClearYear),
             ],
             const Spacer(),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -63,21 +63,6 @@ class SavedPage extends StatelessWidget {
             ),
           ],
         ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: 2,
-          onDestinationSelected: (i) {
-            switch (i) {
-              case 0: context.go('/'); break;
-              case 1: context.go('/search'); break;
-              case 2: context.go('/saved'); break;
-            }
-          },
-          destinations: const [
-            NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-            NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
-            NavigationDestination(icon: Icon(Icons.bookmark), label: 'Saved'),
-          ],
-        ),
         body: const SavedContent(),
       ),
     );

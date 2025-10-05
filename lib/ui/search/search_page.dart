@@ -24,21 +24,6 @@ class _SearchPageState extends State<SearchPage> {
         appBar: AppBar(
           title: const Text('Search'),
         ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: 1,
-          onDestinationSelected: (i) {
-            switch (i) {
-              case 0: context.go('/'); break;
-              case 1: context.go('/search'); break;
-              case 2: context.go('/saved'); break;
-            }
-          },
-          destinations: const [
-            NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-            NavigationDestination(icon: Icon(Icons.search), label: 'Search'),
-            NavigationDestination(icon: Icon(Icons.bookmark_border), label: 'Saved'),
-          ],
-        ),
         body: const SearchContent(),
       ),
     );
