@@ -27,6 +27,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   
   Timer? _timer;
   List<Particle> _particles = [];
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -99,27 +100,31 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     _particleController.repeat();
 
     // Preload and navigate
-    _timer = Timer(const Duration(milliseconds: 2500), () async {
-      if (!mounted) return;
-      
-      try {
-        await precacheImage(const AssetImage('assets/ic_logo.png',), context);
-      } catch (_) {}
-      
-      if (!mounted) return;
-      
-      // Prefetch initial data
-      try {
-        final repo = getIt<MovieRepository>();
-        await Future.wait([
-          repo.refreshTrending(),
-          repo.refreshNowPlaying(),
-        ]);
-      } catch (_) {}
-      
+    _timer = Timer(const Duration(milliseconds: 2500), _attemptPrefetch);
+  }
+
+  Future<void> _attemptPrefetch([_]) async {
+    if (!mounted) return;
+    setState(() => _errorMessage = null);
+
+    try {
+      await precacheImage(const AssetImage('assets/ic_logo.png'), context);
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    try {
+      final repo = getIt<MovieRepository>();
+      await Future.wait([
+        repo.refreshTrending(),
+        repo.refreshNowPlaying(),
+      ]);
       if (!mounted) return;
       context.go('/');
-    });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _errorMessage = 'No internet connection');
+    }
   }
 
   void _initializeParticles() {
@@ -249,20 +254,37 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                       
                       const SizedBox(height: 60),
                       
-                      // Loading indicator
-                      Opacity(
-                        opacity: _logoFade.value,
-                        child: SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white.withOpacity(0.8),
+                      // Loading or retry UI
+                      if (_errorMessage == null)
+                        Opacity(
+                          opacity: _logoFade.value,
+                          child: SizedBox(
+                            width: 40,
+                            height: 40,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white.withOpacity(0.8),
+                              ),
                             ),
                           ),
+                        )
+                      else
+                        Column(
+                          children: [
+                            const Icon(Icons.wifi_off, color: Colors.white, size: 36),
+                            const SizedBox(height: 8),
+                            Text(
+                              _errorMessage!,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                            ),
+                            const SizedBox(height: 12),
+                            FilledButton(
+                              onPressed: _attemptPrefetch,
+                              child: const Text('Retry'),
+                            ),
+                          ],
                         ),
-                      ),
                     ],
                   ),
                 ),
