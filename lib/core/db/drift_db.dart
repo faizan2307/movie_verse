@@ -140,7 +140,13 @@ class AppDatabase extends _$AppDatabase {
       innerJoin(movies, movies.id.equalsExp(bookmarks.movieId)),
     ])..orderBy([OrderingTerm.desc(bookmarks.savedAt)]);
 
-    return q.watch().map((rows) => rows.map((r) => MovieRow.fromTable(r.readTable(movies))).toList());
+    // return q.watch().map((rows) => rows.map((r) => MovieRow.fromTable(r.readTable(movies))).toList());
+    return q.watch().map((rows) => rows.map((r) =>
+      MovieRow.fromTableWithSavedAt(
+        r.readTable(movies),
+        r.readTable(bookmarks).savedAt
+      )
+    ).toList());
   }
 
   Stream<MovieRow?> watchMovie(int id) {
@@ -173,6 +179,7 @@ class MovieRow {
   final String? releaseDate;
   final int? runtime;
   final List<String> genres;
+  final DateTime? savedAt; // For sorting saved movies
 
   MovieRow({
     required this.id,
@@ -183,6 +190,7 @@ class MovieRow {
     this.releaseDate,
     this.runtime,
     this.genres = const [],
+    this.savedAt,
   });
 
   factory MovieRow.fromTable(DbMovie m) => MovieRow(
@@ -194,6 +202,18 @@ class MovieRow {
     releaseDate: m.releaseDate,
     runtime: m.runtime,
     genres: _splitGenres(m.genresCsv),
+  );
+
+  factory MovieRow.fromTableWithSavedAt(DbMovie m, DateTime savedAt) => MovieRow(
+    id: m.id,
+    title: m.title ?? '',
+    overview: m.overview,
+    posterPath: m.posterPath,
+    voteAverage: m.voteAverage,
+    releaseDate: m.releaseDate,
+    runtime: m.runtime,
+    genres: _splitGenres(m.genresCsv),
+    savedAt: savedAt,
   );
 }
 

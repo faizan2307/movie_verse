@@ -43,7 +43,13 @@ List<MovieRow> _applySort(List<MovieRow> input, SavedSort sort) {
   final list = [...input];
   switch (sort) {
     case SavedSort.dateDesc:
-      // DB already returns desc by savedAt; just return list.
+      // Sort by savedAt in descending order (newest first)
+      list.sort((a, b) {
+        if (a.savedAt == null && b.savedAt == null) return 0;
+        if (a.savedAt == null) return 1;
+        if (b.savedAt == null) return -1;
+        return b.savedAt!.compareTo(a.savedAt!);
+      });
       return list;
     case SavedSort.titleAsc:
       list.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));

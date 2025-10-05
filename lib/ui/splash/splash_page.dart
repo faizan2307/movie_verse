@@ -160,9 +160,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.primary.withOpacity(_backgroundOpacity.value),
-                  AppColors.primaryLight.withOpacity(_backgroundOpacity.value * 0.8),
-                  AppColors.accent.withOpacity(_backgroundOpacity.value * 0.6),
+                  AppColors.primary.withOpacity(_backgroundOpacity.value * 0.8),
+                  AppColors.primaryDark.withOpacity(_backgroundOpacity.value * 0.9),
+                  Colors.black.withOpacity(_backgroundOpacity.value * 0.7),
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
@@ -191,7 +191,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                                 borderRadius: BorderRadius.circular(30),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: Colors.white.withOpacity(0.2),
                                     blurRadius: 20,
                                     spreadRadius: 5,
                                   ),
@@ -287,11 +287,11 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           width: particle.size,
           height: particle.size,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.8),
             borderRadius: BorderRadius.circular(particle.size / 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withOpacity(0.3),
                 blurRadius: particle.size,
                 spreadRadius: 1,
               ),
