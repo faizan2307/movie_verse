@@ -18,30 +18,29 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   late final AnimationController _logoController;
   late final AnimationController _backgroundController;
   late final AnimationController _particleController;
-  
+
   late final Animation<double> _logoScale;
   late final Animation<double> _logoFade;
   late final Animation<double> _logoRotation;
   late final Animation<double> _backgroundOpacity;
   late final Animation<double> _particleAnimation;
-  
+
   Timer? _timer;
   List<Particle> _particles = [];
-  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize particles
     _initializeParticles();
-    
+
     // Logo animations
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _logoScale = Tween<double>(
       begin: 0.5,
       end: 1.0,
@@ -49,7 +48,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       parent: _logoController,
       curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
     ));
-    
+
     _logoFade = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -57,7 +56,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       parent: _logoController,
       curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
     ));
-    
+
     _logoRotation = Tween<double>(
       begin: -0.2,
       end: 0.0,
@@ -65,13 +64,13 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       parent: _logoController,
       curve: const Interval(0.2, 0.8, curve: Curves.elasticOut),
     ));
-    
+
     // Background gradient animation
     _backgroundController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _backgroundOpacity = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -79,13 +78,13 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       parent: _backgroundController,
       curve: Curves.easeInOut,
     ));
-    
+
     // Particle animation
     _particleController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
-    
+
     _particleAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -93,38 +92,34 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
       parent: _particleController,
       curve: Curves.easeInOut,
     ));
-    
+
     // Start animations
     _logoController.forward();
     _backgroundController.forward();
     _particleController.repeat();
 
     // Preload and navigate
-    _timer = Timer(const Duration(milliseconds: 2500), _attemptPrefetch);
-  }
+    _timer = Timer(const Duration(milliseconds: 2500), () async {
+      if (!mounted) return;
 
-  Future<void> _attemptPrefetch([_]) async {
-    if (!mounted) return;
-    setState(() => _errorMessage = null);
+      try {
+        await precacheImage(const AssetImage('assets/ic_logo.png',), context);
+      } catch (_) {}
 
-    try {
-      await precacheImage(const AssetImage('assets/ic_logo.png'), context);
-    } catch (_) {}
+      if (!mounted) return;
 
-    if (!mounted) return;
+      // Prefetch initial data
+      try {
+        final repo = getIt<MovieRepository>();
+        await Future.wait([
+          repo.refreshTrending(),
+          repo.refreshNowPlaying(),
+        ]);
+      } catch (_) {}
 
-    try {
-      final repo = getIt<MovieRepository>();
-      await Future.wait([
-        repo.refreshTrending(),
-        repo.refreshNowPlaying(),
-      ]);
       if (!mounted) return;
       context.go('/');
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _errorMessage = 'No internet connection');
-    }
+    });
   }
 
   void _initializeParticles() {
@@ -176,7 +171,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
               children: [
                 // Animated background particles
                 ..._particles.map((particle) => _buildParticle(particle)),
-                
+
                 // Main content
                 Center(
                   child: Column(
@@ -213,9 +208,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 40),
-                      
+
                       // App name with fade animation
                       Opacity(
                         opacity: _logoFade.value,
@@ -236,9 +231,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Subtitle with delay
                       Opacity(
                         opacity: _logoFade.value * 0.8,
@@ -251,40 +246,23 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 60),
-                      
-                      // Loading or retry UI
-                      if (_errorMessage == null)
-                        Opacity(
-                          opacity: _logoFade.value,
-                          child: SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white.withOpacity(0.8),
-                              ),
+
+                      // Loading indicator
+                      Opacity(
+                        opacity: _logoFade.value,
+                        child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white.withOpacity(0.8),
                             ),
                           ),
-                        )
-                      else
-                        Column(
-                          children: [
-                            const Icon(Icons.wifi_off, color: Colors.white, size: 36),
-                            const SizedBox(height: 8),
-                            Text(
-                              _errorMessage!,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
-                            ),
-                            const SizedBox(height: 12),
-                            FilledButton(
-                              onPressed: _attemptPrefetch,
-                              child: const Text('Retry'),
-                            ),
-                          ],
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -299,7 +277,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   Widget _buildParticle(Particle particle) {
     final progress = _particleAnimation.value;
     final animatedY = (particle.y + progress * particle.speed) % 1.0;
-    
+
     return Positioned(
       left: particle.x * MediaQuery.of(context).size.width,
       top: animatedY * MediaQuery.of(context).size.height,
